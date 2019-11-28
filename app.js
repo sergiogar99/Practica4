@@ -45,7 +45,7 @@ const runGraphQLServer = function(context) {
       addFacturas(name:String!,token:ID!,fecha:String!,concepto:String!,cantidad:Float!):Facturas!
 
       removeUser(name:String!,token:ID!):Titulares
-      removeFacturas(name:STring!,token:ID!,id:ID!):Facturas
+      removeFacturas(name:String!,token:ID!,id:ID!):Facturas
 
       login(name:String!,password:String!):ID!
       logout(name:String!,password:String!):String!
@@ -79,7 +79,19 @@ const runGraphQLServer = function(context) {
 
     // Titulares:{
 
+    //   facturas:async (parent, args, ctx, info)=>{
+  
+    //     const rec= parent.title;
+    //     const { client } = ctx;
+    //     const db = client.db("blog");
+    //     const collection = db.collection("ingredients");
 
+    //     const result = await collection.find({"recipe": rec}).toArray();        
+    //     return result;
+    //   },
+  
+
+    
     // },
 
     // Facturas:{
@@ -92,8 +104,9 @@ const runGraphQLServer = function(context) {
  
       getFacturas: async (parent, args, ctx, info) => {
 
-        const { name,token } = ctx;
-        const db = client.db("blog");
+        const { name,token } = args;
+        const { client } = ctx;
+        const db = client.db("morosos");
         const collection = db.collection("users");
 
         //buscar el usuario por username
@@ -104,13 +117,20 @@ const runGraphQLServer = function(context) {
         // const result = await collection.find({}).toArray();
         // return result;
 
+        
+
         const exist = await collection.findOne({name:name});
+
+        if(exist){
+
+          console.log("Existe bri"+ exist.name + exist.token);
+        }
 
         if(exist.token == token){
 
-          collection = db.collection("facturas");
+          const collection = db.collection("facturas");
 
-          const result = await collection.find({"idFActura": exist._id}).toArray(); 
+          const result = await collection.find({"idFactura": exist._id}).toArray(); 
 
           return result;
         }
@@ -145,12 +165,12 @@ const runGraphQLServer = function(context) {
         }
 
       },
-      addFactura: async (parent, args, ctx, info) => {
+      addFacturas: async (parent, args, ctx, info) => {
 
         const { name, token,fecha,concepto,cantidad } = args;
         const { client } = ctx;
         const db = client.db("morosos");
-        const collection = db.collection("users");
+        let collection = db.collection("users");
 
         const exist = await collection.findOne({name:name});
 
@@ -251,6 +271,7 @@ const runApp = async function() {
   try {
     runGraphQLServer({ client });
   } catch (e) {
+    console.log(e);
     client.close();
   }
 };
